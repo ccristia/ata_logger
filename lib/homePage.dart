@@ -1,11 +1,10 @@
 import 'package:ata_logger/ataListPage.dart';
 import 'package:ata_logger/dbmanager.dart';
 import 'package:ata_logger/styles/styles.dart';
-//import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-//import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:sqflite/sqlite_api.dart';
 
@@ -23,7 +22,7 @@ class _ATAPAGEState extends State<ATAPAGE> {
   List<ATA> ataList;
   Database db;
   String today = DateFormat('EEE, d-MMM-yyyy').format(DateTime.now());
-  //FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   _saveClockIn() {
     setState(() {
@@ -79,31 +78,30 @@ class _ATAPAGEState extends State<ATAPAGE> {
     });
 
     //==========LOCAL NOTIFICATION SECTION==============
-    // var initializationSettingsAndroid =
-    //     new AndroidInitializationSettings('app_icon');
-    // var initializationSettingsIOS = new IOSInitializationSettings();
-    // var initializationSettings = new InitializationSettings(
-    //     initializationSettingsAndroid, initializationSettingsIOS);
-    // flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
-    // flutterLocalNotificationsPlugin.initialize(initializationSettings,
-    //     onSelectNotification: onSelectNotification);
+    var initializationSettingsAndroid =
+        new AndroidInitializationSettings('app_icon');
+    var initializationSettingsIOS = new IOSInitializationSettings();
+    var initializationSettings = new InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    flutterLocalNotificationsPlugin = new FlutterLocalNotificationsPlugin();
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onSelectNotification: onSelectNotification);
 
-    // _showNotificationWithSpecificTime(
-    //     id: 0,
-    //     hour: 6,
-    //     minute: 33,
-    //     second: 0,
-    //     msg: 'Mase so Clock In kah... Jangan lupa...');
+    _showNotificationWithSpecificTime(
+        id: 0,
+        hour: 6,
+        minute: 30,
+        second: 0,
+        title: 'Clock In Reminder',
+        msg: 'Mase so Clock In kah... Jangan lupa ya...');
 
-    // _showNotificationWithSpecificTime(
-    //     id: 0,
-    //     hour: 15,
-    //     minute: 35,
-    //     second: 0,
-    //     msg: 'Mase jangan lupa Clock Out ya...');
-
-    // print(FirebaseMessaging().getToken());
-    // FirebaseInAppMessaging().triggerEvent('Example Triger Event');
+    _showNotificationWithSpecificTime(
+        id: 1,
+        hour: 15,
+        minute: 30,
+        second: 0,
+        title: 'Clock Out Reminder',
+        msg: 'Mase jangan lupa Clock Out ya...');
   }
 
   Future onSelectNotification(String payload) async {
@@ -118,23 +116,42 @@ class _ATAPAGEState extends State<ATAPAGE> {
     );
   }
 
-  // Future _showNotificationWithSpecificTime(
-  //     {int id, int hour, int minute, int second, String msg}) async {
-  //   var time = new Time(hour, minute, second);
-  //   var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-  //       'repeatDailyAtTime channel id',
-  //       'repeatDailyAtTime channel name',
-  //       'repeatDailyAtTime description');
-  //   var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-  //   var platformChannelSpecifics = new NotificationDetails(
-  //       androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-  //   await flutterLocalNotificationsPlugin.showDailyAtTime(
-  //       id,
-  //       msg,
-  //       'Lebih baik Mencegah sebelum terbit ODS.',
-  //       time,
-  //       platformChannelSpecifics);
-  // }
+  Future _showNotificationWithSpecificTime(
+      {int id,
+      int hour,
+      int minute,
+      int second,
+      String title,
+      String msg}) async {
+    var time = new Time(hour, minute, second);
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+        'repeatDailyAtTime channel id',
+        'repeatDailyAtTime channel name',
+        'repeatDailyAtTime description');
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    var platformChannelSpecifics = new NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.showDailyAtTime(
+        id, title, msg, time, platformChannelSpecifics);
+  }
+
+  Future _showNotificationinPeriodic() async {
+    var scheduledNotificationDateTime =
+        new DateTime.now().add(new Duration(seconds: 3));
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+        'your other channel id',
+        'your other channel name',
+        'your other channel description');
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    NotificationDetails platformChannelSpecifics = new NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.schedule(
+        0,
+        'scheduled title',
+        'scheduled body',
+        scheduledNotificationDateTime,
+        platformChannelSpecifics);
+  }
 
   @override
   Widget build(BuildContext context) {

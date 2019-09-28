@@ -26,7 +26,7 @@ dependencies:
   sqflite: ^1.1.6+5
   path: ^1.6.4
   intl: ^0.16.0
-  # flutter_local_notifications: ^0.8.3
+  flutter_local_notifications: ^0.8.3
   # firebase_messaging: ^5.1.6
 
 dev_dependencies:
