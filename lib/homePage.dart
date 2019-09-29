@@ -1,6 +1,7 @@
 import 'package:ata_logger/ataListPage.dart';
 import 'package:ata_logger/dbmanager.dart';
 import 'package:ata_logger/styles/styles.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,6 +24,7 @@ class _ATAPAGEState extends State<ATAPAGE> {
   Database db;
   String today = DateFormat('EEE, d-MMM-yyyy').format(DateTime.now());
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
   _saveClockIn() {
     setState(() {
@@ -102,6 +104,11 @@ class _ATAPAGEState extends State<ATAPAGE> {
         second: 0,
         title: 'Clock Out Reminder',
         msg: 'Mase jangan lupa Clock Out ya...');
+
+    // FIREBASE MESSAGING
+    _firebaseMessaging.getToken().then((token) {
+      print(token);
+    });
   }
 
   Future onSelectNotification(String payload) async {
