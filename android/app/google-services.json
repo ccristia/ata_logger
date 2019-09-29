@@ -1,34 +1,42 @@
 {
   "project_info": {
-    "project_number": "1047659745491",
-    "firebase_url": "https://fir-messaging-c84cd.firebaseio.com",
-    "project_id": "fir-messaging-c84cd",
-    "storage_bucket": "fir-messaging-c84cd.appspot.com"
+    "project_number": "712722569691",
+    "firebase_url": "https://fir-message-ata-logger.firebaseio.com",
+    "project_id": "fir-message-ata-logger",
+    "storage_bucket": "fir-message-ata-logger.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1047659745491:android:17a7d7712e2c425ce3c426",
+        "mobilesdk_app_id": "1:712722569691:android:879a932ba2573a45ffaffe",
         "android_client_info": {
-          "package_name": "com.example.ata_logger"
+          "package_name": "com.dcc.ata_logger"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1047659745491-bn15hjn3tokltfnead22t32a0vuihqmq.apps.googleusercontent.com",
+          "client_id": "712722569691-56u9q7jvjfgefj4el6c2uu2hc8222ua1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dcc.ata_logger",
+            "certificate_hash": "0d83fa1ea5c48a914d94bde44dab86bb18d3d0da"
+          }
+        },
+        {
+          "client_id": "712722569691-jaqqiaioj2rusmfbs2etrgp77srob13g.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDSvf7jUQSpgySbjTJ9E-WeC6Jr7cJh3y8"
+          "current_key": "AIzaSyAZsyTc6FfLvNPiUocv3A3YmZ_Xakr0D_U"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1047659745491-bn15hjn3tokltfnead22t32a0vuihqmq.apps.googleusercontent.com",
+              "client_id": "712722569691-jaqqiaioj2rusmfbs2etrgp77srob13g.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
