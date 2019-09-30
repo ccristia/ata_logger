@@ -14,7 +14,7 @@ class ATAPAGE extends StatefulWidget {
   _ATAPAGEState createState() => _ATAPAGEState();
 }
 
-class _ATAPAGEState extends State<ATAPAGE> {
+class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
   String clockInTime;
   String clockOutTime;
   bool isClockInDisable = false;
@@ -53,31 +53,28 @@ class _ATAPAGEState extends State<ATAPAGE> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused) {
+      print("app Paused");
+    } else if (state == AppLifecycleState.resumed) {
+      print("App resumed");
+      _cekButtonStatus();
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+  }
+
+  @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
 
-    var hasil = DbATAManager().checkATA(today);
-    hasil.then((result) {
-      if (result.clockIn.isEmpty && result.clockOut.isEmpty) {
-        setState(() {
-          isClockInDisable = false;
-          isClockOutDisable = false;
-        });
-      } else if (result.clockIn.isNotEmpty && result.clockOut == null) {
-        setState(() {
-          isClockInDisable = true;
-          isClockOutDisable = false;
-          clockInTime = result.clockIn;
-        });
-      } else if (result.clockOut.isNotEmpty && result.clockOut.isNotEmpty) {
-        setState(() {
-          isClockInDisable = true;
-          clockInTime = result.clockIn;
-          isClockOutDisable = true;
-          clockOutTime = result.clockOut;
-        });
-      }
-    });
+    _cekButtonStatus();
 
     //==========LOCAL NOTIFICATION SECTION==============
     var initializationSettingsAndroid =
@@ -108,6 +105,32 @@ class _ATAPAGEState extends State<ATAPAGE> {
     // FIREBASE MESSAGING
     _firebaseMessaging.getToken().then((token) {
       print(token);
+    });
+  }
+
+  void _cekButtonStatus() {
+    String hariIni = DateFormat('EEE, d-MMM-yyyy').format(DateTime.now());
+    var hasil = DbATAManager().checkATA(hariIni);
+    hasil.then((result) {
+      if (result.clockIn.isEmpty && result.clockOut.isEmpty) {
+        setState(() {
+          isClockInDisable = false;
+          isClockOutDisable = false;
+        });
+      } else if (result.clockIn.isNotEmpty && result.clockOut == null) {
+        setState(() {
+          isClockInDisable = true;
+          isClockOutDisable = false;
+          clockInTime = result.clockIn;
+        });
+      } else if (result.clockOut.isNotEmpty && result.clockOut.isNotEmpty) {
+        setState(() {
+          isClockInDisable = true;
+          clockInTime = result.clockIn;
+          isClockOutDisable = true;
+          clockOutTime = result.clockOut;
+        });
+      }
     });
   }
 
