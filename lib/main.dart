@@ -1,4 +1,4 @@
-import 'package:ata_logger/testing.dart';
+import 'package:ata_logger/settingPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 

@@ -1,5 +1,6 @@
 import 'package:ata_logger/ataListPage.dart';
 import 'package:ata_logger/dbmanager.dart';
+import 'package:ata_logger/settingPage.dart';
 import 'package:ata_logger/styles/styles.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -15,6 +16,7 @@ class ATAPAGE extends StatefulWidget {
 }
 
 class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
+  String namaUser;
   String clockInTime;
   String clockOutTime;
   bool isClockInDisable = false;
@@ -60,6 +62,62 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
     } else if (state == AppLifecycleState.resumed) {
       print("App resumed");
       _cekButtonStatus();
+      // String hariIni = DateFormat('EEE, d-MMM-yyyy').format(DateTime.now());
+      // DbATAManager().getATA(hariIni).then((value) {
+      //   print('value ' + value.toString());
+      //   print(isClockOutDisable);
+
+      //   if (value == null) {
+      //     setState(() {
+      //       isClockInDisable = false;
+      //       isClockOutDisable = false;
+      //     });
+
+      //     DbATAManager().getClockIn().then((data) {
+      //       _showNotificationWithSpecificTime(
+      //           id: 0,
+      //           hour: data[0].jam,
+      //           minute: data[0].menit,
+      //           second: data[0].detik,
+      //           title: data[0].judulClockIn,
+      //           msg: data[0].bodyClockIn);
+      //     });
+
+      //     DbATAManager().getClockOut().then((data) {
+      //       _showNotificationWithSpecificTime(
+      //           id: 1,
+      //           hour: data[0].jam,
+      //           minute: data[0].menit,
+      //           second: data[0].detik,
+      //           title: data[0].judulClockOut,
+      //           msg: data[0].bodyClockOut);
+      //     });
+
+      //     print('cek clock in and out run masuk notifikasi jam : ');
+      //   } else {
+      //     if (isClockInDisable == false && isClockOutDisable == true) {
+      //       DbATAManager().getClockIn().then((data) {
+      //         _showNotificationWithSpecificTime(
+      //             id: 0,
+      //             hour: data[0].jam,
+      //             minute: data[0].menit,
+      //             second: data[0].detik,
+      //             title: data[0].judulClockIn,
+      //             msg: data[0].bodyClockIn);
+      //       });
+      //     } else if (isClockInDisable == true && isClockOutDisable == false) {
+      //       DbATAManager().getClockOut().then((data) {
+      //         _showNotificationWithSpecificTime(
+      //             id: 1,
+      //             hour: data[0].jam,
+      //             minute: data[0].menit,
+      //             second: data[0].detik,
+      //             title: data[0].judulClockOut,
+      //             msg: data[0].bodyClockOut);
+      //       });
+      //     }
+      //   }
+      // });
     }
   }
 
@@ -71,11 +129,15 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
 
   @override
   void initState() {
+    print('App Init');
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
     _cekButtonStatus();
+  }
 
+  void _cekButtonStatus() {
+    print('Cek Button Status');
     //==========LOCAL NOTIFICATION SECTION==============
     var initializationSettingsAndroid =
         new AndroidInitializationSettings('app_icon');
@@ -86,32 +148,35 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
     flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onSelectNotification: onSelectNotification);
 
-    _showNotificationWithSpecificTime(
-        id: 0,
-        hour: 6,
-        minute: 30,
-        second: 0,
-        title: 'Clock In Reminder',
-        msg: 'Mase so Clock In kah... Jangan lupa ya...');
-
-    _showNotificationWithSpecificTime(
-        id: 1,
-        hour: 15,
-        minute: 30,
-        second: 0,
-        title: 'Clock Out Reminder',
-        msg: 'Mase jangan lupa Clock Out ya...');
-
-    // FIREBASE MESSAGING
-    _firebaseMessaging.getToken().then((token) {
-      print(token);
-    });
-  }
-
-  void _cekButtonStatus() {
     String hariIni = DateFormat('EEE, d-MMM-yyyy').format(DateTime.now());
-    var hasil = DbATAManager().checkATA(hariIni);
-    hasil.then((result) {
+    DbATAManager().checkATA(hariIni).then((result) {
+      if (result == null) {
+        setState(() {
+          isClockInDisable = false;
+          isClockOutDisable = false;
+        });
+        DbATAManager().getClockIn().then((data) {
+          _showNotificationWithSpecificTime(
+              id: 0,
+              hour: data[0].jam,
+              minute: data[0].menit,
+              second: data[0].detik,
+              title: data[0].judulClockIn,
+              msg: data[0].bodyClockIn);
+        });
+        DbATAManager().getClockOut().then((data) {
+          _showNotificationWithSpecificTime(
+              id: 1,
+              hour: data[0].jam,
+              minute: data[0].menit,
+              second: data[0].detik,
+              title: data[0].judulClockOut,
+              msg: data[0].bodyClockOut);
+        });
+
+        print('no data in database - all button enabled');
+      }
+
       if (result.clockIn.isEmpty && result.clockOut.isEmpty) {
         setState(() {
           isClockInDisable = false;
@@ -123,14 +188,55 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
           isClockOutDisable = false;
           clockInTime = result.clockIn;
         });
+
+        DbATAManager().getClockOut().then((data) {
+          _showNotificationWithSpecificTime(
+              id: 0,
+              hour: data[0].jam,
+              minute: data[0].menit,
+              second: data[0].detik,
+              title: data[0].judulClockOut,
+              msg: data[0].bodyClockOut);
+
+          print(
+              'Button Clock In False : Jam ${data[0].jam.toString()} menit : ${data[0].menit.toString()}');
+        });
       } else if (result.clockOut.isNotEmpty && result.clockOut.isNotEmpty) {
+        print('all button disabled');
         setState(() {
           isClockInDisable = true;
           clockInTime = result.clockIn;
           isClockOutDisable = true;
           clockOutTime = result.clockOut;
         });
+
+        // DbATAManager().getClockIn().then((data) {
+        //   _showNotificationWithSpecificTime(
+        //       id: 0,
+        //       hour: data[0].jam,
+        //       minute: data[0].menit,
+        //       second: data[0].detik,
+        //       title: data[0].judulClockIn,
+        //       msg: data[0].bodyClockIn);
+        // });
+        // DbATAManager().getClockOut().then((data) {
+        //   _showNotificationWithSpecificTime(
+        //       id: 1,
+        //       hour: data[0].jam,
+        //       minute: data[0].menit,
+        //       second: data[0].detik,
+        //       title: data[0].judulClockOut,
+        //       msg: data[0].bodyClockOut);
+        // });
       }
+    });
+
+    //get profile name
+    DbATAManager().getProfile().then((value) {
+      setState(() {
+        namaUser = value[0].nama;
+      });
+      // print(namaUser);
     });
   }
 
@@ -258,23 +364,79 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
               ),
               Padding(
                 padding: const EdgeInsets.only(top: 30),
-                child: ListTile(
-                  leading: Text('CekLok Boss!', style: titleBigText),
-                  trailing: InkWell(
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ListATAPage()));
-                    },
-                    child: Icon(
-                      Icons.date_range,
-                      size: 30,
-                      color: Colors.blue[300],
+                child: AppBar(
+                  centerTitle: false,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  title: Text('Hi, ' + namaUser.toString().toUpperCase()),
+                  actions: <Widget>[
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SettingPage()));
+                      },
+                      child: Icon(
+                        Icons.settings,
+                        size: 30,
+                        color: Colors.blue[300],
+                      ),
                     ),
-                  ),
+                    SizedBox(width: 10),
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ListATAPage()));
+                      },
+                      child: Icon(
+                        Icons.date_range,
+                        size: 30,
+                        color: Colors.blue[300],
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                  ],
                 ),
               ),
+              // Padding(
+              //   padding: const EdgeInsets.only(top: 30),
+              //   child: ListTile(
+              //     leading: Text('CekLok Boss!', style: titleBigText),
+              //     trailing: Row(
+              //       mainAxisAlignment: MainAxisAlignment.end,
+              //       children: <Widget>[
+              //         InkWell(
+              //           onTap: () {
+              //             Navigator.push(
+              //                 context,
+              //                 MaterialPageRoute(
+              //                     builder: (context) => SettingPage()));
+              //           },
+              //           child: Icon(
+              //             Icons.settings,
+              //             size: 30,
+              //           ),
+              //         ),
+              //         InkWell(
+              //           onTap: () {
+              //             Navigator.push(
+              //                 context,
+              //                 MaterialPageRoute(
+              //                     builder: (context) => ListATAPage()));
+              //           },
+              //           child: Icon(
+              //             Icons.date_range,
+              //             size: 30,
+              //             // color: Colors.blue[300],
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
               Positioned(
                 left: screenWidth * 0.15,
                 top: screenHeight * 0.25,

@@ -32,7 +32,12 @@ class _ListATAPageState extends State<ListATAPage> {
             child: FutureBuilder(
               future: DbATAManager().getATAList(),
               builder: (context, snapshot) {
-                // print('SELECT * FROM ata');
+                if (snapshot.hasData == null &&
+                    snapshot.connectionState == ConnectionState.none) {
+                  return Center(
+                    child: Text('No Data'),
+                  );
+                }
                 if (snapshot.hasData) {
                   ataList = snapshot.data;
 
@@ -155,7 +160,11 @@ class _ListATAPageState extends State<ListATAPage> {
                     },
                   );
                 }
-                return Center(child: CircularProgressIndicator());
+                return Center(
+                    child: Text(
+                  'Belum ada Record',
+                  style: titleText,
+                ));
               },
             ),
           ),
