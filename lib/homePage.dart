@@ -1,8 +1,8 @@
-import 'package:ata_logger/ataListPage.dart';
 import 'package:ata_logger/dbmanager.dart';
 import 'package:ata_logger/settingPage.dart';
+
 import 'package:ata_logger/styles/styles.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,8 +25,8 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
   List<ATA> ataList;
   Database db;
   String today = DateFormat('EEE, d-MMM-yyyy').format(DateTime.now());
+
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
-  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
   _saveClockIn() {
     setState(() {
@@ -44,14 +44,25 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
 
   _saveClockOut() {
     clockOutTime = DateFormat.jm().format(DateTime.now());
-    setState(() {
-      ATA data = ATA(
-        clockOut: clockOutTime,
-      );
+    ATA data = ATA(
+      clockOut: clockOutTime,
+    );
 
+    if (isClockInDisable == true) {
       DbATAManager().updateATA(data, today);
-      isClockOutDisable = true;
-    });
+      setState(() {
+        isClockInDisable = true;
+        isClockOutDisable = true;
+      });
+    } else if (isClockInDisable == false) {
+      clockOutTime = DateFormat.jm().format(DateTime.now());
+      ATA data = ATA(day: today, clockIn: null, clockOut: clockOutTime);
+
+      DbATAManager().insertATA(data);
+      setState(() {
+        isClockOutDisable = true;
+      });
+    }
   }
 
   @override
@@ -62,62 +73,6 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
     } else if (state == AppLifecycleState.resumed) {
       print("App resumed");
       _cekButtonStatus();
-      // String hariIni = DateFormat('EEE, d-MMM-yyyy').format(DateTime.now());
-      // DbATAManager().getATA(hariIni).then((value) {
-      //   print('value ' + value.toString());
-      //   print(isClockOutDisable);
-
-      //   if (value == null) {
-      //     setState(() {
-      //       isClockInDisable = false;
-      //       isClockOutDisable = false;
-      //     });
-
-      //     DbATAManager().getClockIn().then((data) {
-      //       _showNotificationWithSpecificTime(
-      //           id: 0,
-      //           hour: data[0].jam,
-      //           minute: data[0].menit,
-      //           second: data[0].detik,
-      //           title: data[0].judulClockIn,
-      //           msg: data[0].bodyClockIn);
-      //     });
-
-      //     DbATAManager().getClockOut().then((data) {
-      //       _showNotificationWithSpecificTime(
-      //           id: 1,
-      //           hour: data[0].jam,
-      //           minute: data[0].menit,
-      //           second: data[0].detik,
-      //           title: data[0].judulClockOut,
-      //           msg: data[0].bodyClockOut);
-      //     });
-
-      //     print('cek clock in and out run masuk notifikasi jam : ');
-      //   } else {
-      //     if (isClockInDisable == false && isClockOutDisable == true) {
-      //       DbATAManager().getClockIn().then((data) {
-      //         _showNotificationWithSpecificTime(
-      //             id: 0,
-      //             hour: data[0].jam,
-      //             minute: data[0].menit,
-      //             second: data[0].detik,
-      //             title: data[0].judulClockIn,
-      //             msg: data[0].bodyClockIn);
-      //       });
-      //     } else if (isClockInDisable == true && isClockOutDisable == false) {
-      //       DbATAManager().getClockOut().then((data) {
-      //         _showNotificationWithSpecificTime(
-      //             id: 1,
-      //             hour: data[0].jam,
-      //             minute: data[0].menit,
-      //             second: data[0].detik,
-      //             title: data[0].judulClockOut,
-      //             msg: data[0].bodyClockOut);
-      //       });
-      //     }
-      //   }
-      // });
     }
   }
 
@@ -155,6 +110,8 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
           isClockInDisable = false;
           isClockOutDisable = false;
         });
+        print('no data in database - all button enabled');
+
         DbATAManager().getClockIn().then((data) {
           _showNotificationWithSpecificTime(
               id: 0,
@@ -163,6 +120,9 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
               second: data[0].detik,
               title: data[0].judulClockIn,
               msg: data[0].bodyClockIn);
+
+          print(
+              'reminder clock in will start on Jam : ${data[0].jam} menit ${data[0].menit}');
         });
         DbATAManager().getClockOut().then((data) {
           _showNotificationWithSpecificTime(
@@ -173,16 +133,14 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
               title: data[0].judulClockOut,
               msg: data[0].bodyClockOut);
         });
-
-        print('no data in database - all button enabled');
       }
 
-      if (result.clockIn.isEmpty && result.clockOut.isEmpty) {
+      if (result.clockIn == null && result.clockOut == null) {
         setState(() {
           isClockInDisable = false;
           isClockOutDisable = false;
         });
-      } else if (result.clockIn.isNotEmpty && result.clockOut == null) {
+      } else if (result.clockIn != null && result.clockOut == null) {
         setState(() {
           isClockInDisable = true;
           isClockOutDisable = false;
@@ -201,7 +159,7 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
           print(
               'Button Clock In False : Jam ${data[0].jam.toString()} menit : ${data[0].menit.toString()}');
         });
-      } else if (result.clockOut.isNotEmpty && result.clockOut.isNotEmpty) {
+      } else if (result.clockOut != null && result.clockOut != null) {
         print('all button disabled');
         setState(() {
           isClockInDisable = true;
@@ -209,25 +167,6 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
           isClockOutDisable = true;
           clockOutTime = result.clockOut;
         });
-
-        // DbATAManager().getClockIn().then((data) {
-        //   _showNotificationWithSpecificTime(
-        //       id: 0,
-        //       hour: data[0].jam,
-        //       minute: data[0].menit,
-        //       second: data[0].detik,
-        //       title: data[0].judulClockIn,
-        //       msg: data[0].bodyClockIn);
-        // });
-        // DbATAManager().getClockOut().then((data) {
-        //   _showNotificationWithSpecificTime(
-        //       id: 1,
-        //       hour: data[0].jam,
-        //       minute: data[0].menit,
-        //       second: data[0].detik,
-        //       title: data[0].judulClockOut,
-        //       msg: data[0].bodyClockOut);
-        // });
       }
     });
 
@@ -271,24 +210,6 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
         id, title, msg, time, platformChannelSpecifics);
   }
 
-  Future _showNotificationinPeriodic() async {
-    var scheduledNotificationDateTime =
-        new DateTime.now().add(new Duration(seconds: 3));
-    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-        'your other channel id',
-        'your other channel name',
-        'your other channel description');
-    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-    NotificationDetails platformChannelSpecifics = new NotificationDetails(
-        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.schedule(
-        0,
-        'scheduled title',
-        'scheduled body',
-        scheduledNotificationDateTime,
-        platformChannelSpecifics);
-  }
-
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -313,204 +234,165 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
               ));
     }
 
-    return WillPopScope(
-      onWillPop: () => _exitApp(),
-      child: Column(
-        children: <Widget>[
-          Stack(
-            children: <Widget>[
-              Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  decoration: BoxDecoration(
-                    color: backgroundColor,
-                  )),
-              Positioned(
-                top: -150,
-                left: -130,
-                child: Container(
-                  width: 400,
-                  height: 400,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: buttonColor.withOpacity(0.8),
-                  ),
-                ),
-              ),
-              Positioned(
-                //top: 00,
-                bottom: -150,
-                right: -250,
-                child: Container(
-                  width: 400,
-                  height: 400,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: buttonColor.withOpacity(0.5),
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: 50,
-                left: 70,
-                child: Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: buttonColor.withOpacity(0.3),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 30),
-                child: AppBar(
-                  centerTitle: false,
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  title: Text('Hi, ' + namaUser.toString().toUpperCase()),
-                  actions: <Widget>[
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => SettingPage()));
-                      },
-                      child: Icon(
-                        Icons.settings,
-                        size: 30,
-                        color: Colors.blue[300],
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    InkWell(
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => ListATAPage()));
-                      },
-                      child: Icon(
-                        Icons.date_range,
-                        size: 30,
-                        color: Colors.blue[300],
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                  ],
-                ),
-              ),
-              // Padding(
-              //   padding: const EdgeInsets.only(top: 30),
-              //   child: ListTile(
-              //     leading: Text('CekLok Boss!', style: titleBigText),
-              //     trailing: Row(
-              //       mainAxisAlignment: MainAxisAlignment.end,
-              //       children: <Widget>[
-              //         InkWell(
-              //           onTap: () {
-              //             Navigator.push(
-              //                 context,
-              //                 MaterialPageRoute(
-              //                     builder: (context) => SettingPage()));
-              //           },
-              //           child: Icon(
-              //             Icons.settings,
-              //             size: 30,
-              //           ),
-              //         ),
-              //         InkWell(
-              //           onTap: () {
-              //             Navigator.push(
-              //                 context,
-              //                 MaterialPageRoute(
-              //                     builder: (context) => ListATAPage()));
-              //           },
-              //           child: Icon(
-              //             Icons.date_range,
-              //             size: 30,
-              //             // color: Colors.blue[300],
-              //           ),
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // ),
-              Positioned(
-                left: screenWidth * 0.15,
-                top: screenHeight * 0.25,
-                child: Card(
-                  elevation: 10,
-                  child: Container(
-                    width: screenWidth * 0.7,
-                    height: screenHeight * 0.5,
+    return Scaffold(
+      body: WillPopScope(
+        onWillPop: () => _exitApp(),
+        child: Column(
+          children: <Widget>[
+            Stack(
+              children: <Widget>[
+                Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
+                      color: backgroundColor,
+                    )),
+                Positioned(
+                  top: -150,
+                  left: -130,
+                  child: Container(
+                    width: 400,
+                    height: 400,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: buttonColor.withOpacity(0.8),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(10, 30, 10, 10),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                              DateFormat('EEE, d-MMM-yyyy')
-                                  .format(DateTime.now())
-                                  .toString(),
-                              style: titleText),
-                          SizedBox(height: 50),
-                          InkWell(
-                            child: Container(
-                              width: 200,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                  color: isClockInDisable
-                                      ? buttonDisableColor
-                                      : buttonColor,
-                                  borderRadius: BorderRadius.circular(20)),
-                              child: Center(
-                                  child: Text('Clock In', style: buttonText)),
-                            ),
-                            onTap: () =>
-                                isClockInDisable ? null : _saveClockIn(),
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            'Clock In : ' + clockInTime.toString(),
-                            style: titleSmallText,
-                            textAlign: TextAlign.left,
-                          ),
-                          SizedBox(height: 25),
-                          InkWell(
+                  ),
+                ),
+                Positioned(
+                  //top: 00,
+                  bottom: -150,
+                  right: -250,
+                  child: Container(
+                    width: 400,
+                    height: 400,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: buttonColor.withOpacity(0.5),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 50,
+                  left: 70,
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: buttonColor.withOpacity(0.3),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 30),
+                  child: AppBar(
+                    centerTitle: false,
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    title: Text('Hi, ' + namaUser.toString().toUpperCase()),
+                    actions: <Widget>[
+                      InkWell(
+                        onTap: () =>
+                            // Navigator.pushNamed(context, '/settingPage'),
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => SettingPage())),
+                        child: Icon(
+                          Icons.settings,
+                          size: 30,
+                          color: Colors.blue[300],
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      InkWell(
+                        onTap: () => Navigator.pushNamed(context, '/listPage'),
+                        child: Icon(
+                          Icons.date_range,
+                          size: 30,
+                          color: Colors.blue[300],
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  left: screenWidth * 0.15,
+                  top: screenHeight * 0.25,
+                  child: Card(
+                    elevation: 10,
+                    child: Container(
+                      width: screenWidth * 0.7,
+                      height: screenHeight * 0.5,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(10, 30, 10, 10),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                                DateFormat('EEE, d-MMM-yyyy')
+                                    .format(DateTime.now())
+                                    .toString(),
+                                style: titleText),
+                            SizedBox(height: 50),
+                            InkWell(
                               child: Container(
                                 width: 200,
                                 height: 50,
                                 decoration: BoxDecoration(
-                                    color: isClockOutDisable
+                                    color: isClockInDisable
                                         ? buttonDisableColor
                                         : buttonColor,
                                     borderRadius: BorderRadius.circular(20)),
                                 child: Center(
-                                    child:
-                                        Text('Clock Out', style: buttonText)),
+                                    child: Text('Clock In', style: buttonText)),
                               ),
                               onTap: () =>
-                                  isClockOutDisable ? null : _saveClockOut()),
-                          SizedBox(height: 10),
-                          Text(
-                            'Clock Out : ' + clockOutTime.toString(),
-                            style: titleSmallText,
-                            textAlign: TextAlign.left,
-                          ),
-                        ],
+                                  isClockInDisable ? null : _saveClockIn(),
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              'Clock In : ' + clockInTime.toString(),
+                              style: titleSmallText,
+                              textAlign: TextAlign.left,
+                            ),
+                            SizedBox(height: 25),
+                            InkWell(
+                                child: Container(
+                                  width: 200,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                      color: isClockOutDisable
+                                          ? buttonDisableColor
+                                          : buttonColor,
+                                      borderRadius: BorderRadius.circular(20)),
+                                  child: Center(
+                                      child:
+                                          Text('Clock Out', style: buttonText)),
+                                ),
+                                onTap: () =>
+                                    isClockOutDisable ? null : _saveClockOut()),
+                            SizedBox(height: 10),
+                            Text(
+                              'Clock Out : ' + clockOutTime.toString(),
+                              style: titleSmallText,
+                              textAlign: TextAlign.left,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

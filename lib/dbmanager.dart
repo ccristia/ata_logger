@@ -63,6 +63,20 @@ class DbATAManager {
     });
   }
 
+  Future<List<ATA>> getATAListByDay(String day) async {
+    await openDb();
+    final List<Map<String, dynamic>> data =
+        await _database.query('ata', whereArgs: [day], where: 'day = ?');
+    return List.generate(data.length, (i) {
+      return ATA(
+          id: data[i]['id'],
+          day: data[i]['day'],
+          clockIn: data[i]['clockIn'],
+          clockOut: data[i]['clockOut'],
+          note: data[i]['note']);
+    });
+  }
+
   Future<List<ClockIn>> getClockIn() async {
     await openDb();
     final List<Map<String, dynamic>> data = await _database.query('clockIn');

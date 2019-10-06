@@ -18,6 +18,8 @@ TextStyle titleBigText = TextStyle(
 
 TextStyle titleSmallText =
     TextStyle(fontSize: smallfontSize, color: Colors.black38);
+TextStyle titleCalenderText = TextStyle(
+    fontSize: smallfontSize, color: Colors.white, fontWeight: FontWeight.bold);
 
 TextStyle buttonText = TextStyle(
     fontWeight: FontWeight.w600, fontSize: mediumfontSize, color: Colors.white);
