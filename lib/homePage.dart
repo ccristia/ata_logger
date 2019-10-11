@@ -1,3 +1,4 @@
+import 'package:ata_logger/ataListPage.dart';
 import 'package:ata_logger/dbmanager.dart';
 import 'package:ata_logger/settingPage.dart';
 
@@ -30,15 +31,16 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
 
   _saveClockIn() {
     setState(() {
-      if (myATA == null) {
-        clockInTime = DateFormat.jm().format(DateTime.now());
-        ATA data = ATA(day: today, clockIn: clockInTime, clockOut: null);
+      today = DateFormat('EEE, d-MMM-yyyy').format(DateTime.now());
+    });
 
-        DbATAManager().insertATA(data);
-
-        isClockInDisable = true;
-        isClockOutDisable = false;
-      }
+    clockInTime = DateFormat.jm().format(DateTime.now());
+    ATA data = ATA(day: today, clockIn: clockInTime, clockOut: null);
+    print('Hari ini :' + clockInTime);
+    DbATAManager().insertATA(data);
+    setState(() {
+      isClockInDisable = true;
+      isClockOutDisable = false;
     });
   }
 
@@ -93,6 +95,7 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
 
   void _cekButtonStatus() {
     print('Cek Button Status');
+
     //==========LOCAL NOTIFICATION SECTION==============
     var initializationSettingsAndroid =
         new AndroidInitializationSettings('app_icon');
@@ -113,25 +116,32 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
         print('no data in database - all button enabled');
 
         DbATAManager().getClockIn().then((data) {
-          _showNotificationWithSpecificTime(
-              id: 0,
-              hour: data[0].jam,
-              minute: data[0].menit,
-              second: data[0].detik,
-              title: data[0].judulClockIn,
-              msg: data[0].bodyClockIn);
+          if (DateTime.now().weekday != DateTime.saturday &&
+              DateTime.now().weekday != DateTime.sunday) {
+            _showNotificationWithSpecificTime(
+                id: 0,
+                hour: data[0].jam,
+                minute: data[0].menit,
+                second: data[0].detik,
+                title: data[0].judulClockIn,
+                msg: data[0].bodyClockIn);
 
-          print(
-              'reminder clock in will start on Jam : ${data[0].jam} menit ${data[0].menit}');
+            print(
+                'reminder clock in will start on Jam : ${data[0].jam} menit ${data[0].menit}');
+          }
         });
         DbATAManager().getClockOut().then((data) {
-          _showNotificationWithSpecificTime(
-              id: 1,
-              hour: data[0].jam,
-              minute: data[0].menit,
-              second: data[0].detik,
-              title: data[0].judulClockOut,
-              msg: data[0].bodyClockOut);
+          if (DateTime.now().weekday != DateTime.saturday &&
+              DateTime.now().weekday != DateTime.sunday) {
+            _showNotificationWithSpecificTime(
+                id: 1,
+                hour: data[0].jam,
+                minute: data[0].menit,
+                second: data[0].detik,
+                title: data[0].judulClockOut,
+                msg: data[0].bodyClockOut);
+            print('reminder clock out executing...');
+          }
         });
       }
 
@@ -139,6 +149,7 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
         setState(() {
           isClockInDisable = false;
           isClockOutDisable = false;
+          print('All button enabled');
         });
       } else if (result.clockIn != null && result.clockOut == null) {
         setState(() {
@@ -148,16 +159,19 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
         });
 
         DbATAManager().getClockOut().then((data) {
-          _showNotificationWithSpecificTime(
-              id: 0,
-              hour: data[0].jam,
-              minute: data[0].menit,
-              second: data[0].detik,
-              title: data[0].judulClockOut,
-              msg: data[0].bodyClockOut);
+          if (DateTime.now().weekday != DateTime.saturday ||
+              DateTime.now().weekday != DateTime.sunday) {
+            _showNotificationWithSpecificTime(
+                id: 0,
+                hour: data[0].jam,
+                minute: data[0].menit,
+                second: data[0].detik,
+                title: data[0].judulClockOut,
+                msg: data[0].bodyClockOut);
 
-          print(
-              'Button Clock In False : Jam ${data[0].jam.toString()} menit : ${data[0].menit.toString()}');
+            print(
+                'Button Clock In False : Jam ${data[0].jam.toString()} menit : ${data[0].menit.toString()}');
+          }
         });
       } else if (result.clockOut != null && result.clockOut != null) {
         print('all button disabled');
@@ -287,6 +301,7 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
                 Padding(
                   padding: const EdgeInsets.only(top: 30),
                   child: AppBar(
+                    automaticallyImplyLeading: false,
                     centerTitle: false,
                     backgroundColor: Colors.transparent,
                     elevation: 0,
@@ -307,7 +322,12 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
                       ),
                       SizedBox(width: 10),
                       InkWell(
-                        onTap: () => Navigator.pushNamed(context, '/listPage'),
+                        onTap: () =>
+                            // Navigator.pushNamed(context, '/listPage'),
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ListATAPage())),
                         child: Icon(
                           Icons.date_range,
                           size: 30,
