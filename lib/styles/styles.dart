@@ -9,6 +9,7 @@ Color buttonDisableColor = Color(0xffe7eaed);
 double largeFontSize = 30;
 double mediumfontSize = 20;
 double smallfontSize = 18;
+double littlefontSize = 16;
 
 TextStyle titleText = TextStyle(
     fontWeight: FontWeight.bold, fontSize: mediumfontSize, color: Colors.black);
@@ -18,6 +19,12 @@ TextStyle titleBigText = TextStyle(
 
 TextStyle titleSmallText =
     TextStyle(fontSize: smallfontSize, color: Colors.black38);
+
+TextStyle titleLittleText = TextStyle(
+    fontSize: littlefontSize,
+    color: Colors.black38,
+    fontWeight: FontWeight.bold);
+
 TextStyle titleCalenderText = TextStyle(
     fontSize: smallfontSize, color: Colors.white, fontWeight: FontWeight.bold);
 
