@@ -2,6 +2,7 @@ import 'package:ata_logger/dbmanager.dart';
 import 'package:ata_logger/styles/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:intl/intl.dart';
 
 class SettingPage extends StatefulWidget {
   SettingPage({Key key}) : super(key: key);
@@ -23,6 +24,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
   String fotoProfile;
   String _timeClockIn;
   String _timeClockOut;
+
   List<String> _waktuClockIn;
   List<String> _waktuClockOut;
 
@@ -44,15 +46,45 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
     _getDatafromDb();
   }
 
+  String _formatTime(List value) {
+    String _tempJam;
+    String _tempMenit;
+    String _tempDetik;
+    String _timeResut;
+    if (value[0].jam < 10)
+      _tempJam = '0' + value[0].jam.toString();
+    else
+      _tempJam = value[0].jam.toString();
+    if (value[0].menit < 10)
+      _tempMenit = '0' + value[0].menit.toString();
+    else
+      _tempMenit = value[0].menit.toString();
+    if (value[0].detik < 10)
+      _tempDetik = '0' + value[0].detik.toString();
+    else
+      _tempDetik = value[0].detik.toString();
+    _timeResut =
+        '${_tempJam.toString()}:${_tempMenit.toString()}:${_tempDetik.toString()}';
+    print('Initial Date : ' + _timeResut);
+
+    return _timeResut;
+  }
+
   _getDatafromDb() {
     DbATAManager().getClockIn().then((value) {
-      _timeClockIn = '${value[0].jam}:${value[0].menit}:${value[0].detik}';
+      setState(() {
+        _timeClockIn = _formatTime(value);
+      });
+
       textJudulNotifikasiClockIn.text = value[0].judulClockIn;
       textBodyNotifikasiClockIn.text = value[0].bodyClockIn;
     });
 
     DbATAManager().getClockOut().then((value) {
-      _timeClockOut = '${value[0].jam}:${value[0].menit}:${value[0].detik}';
+      setState(() {
+        _timeClockOut = _formatTime(value);
+      });
+
       textJudulNotifikasiClockOut.text = value[0].judulClockOut;
       textBodyNotifikasiClockOut.text = value[0].bodyClockOut;
     });
@@ -60,10 +92,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
     DbATAManager().getProfile().then((value) {
       textNama.text = value[0].nama.toString();
       fotoProfile = value[0].foto.toString();
-      print(fotoProfile);
     });
-
-    setState(() {});
   }
 
   @override
@@ -137,28 +166,32 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                                 'Reminder Clock In Jam : ',
                                 style: titleSmallText,
                               ),
-                              FlatButton(
-                                child: Text(
-                                    _timeClockIn == null
-                                        ? 'Set Waktu'
-                                        : _timeClockIn.toString(),
-                                    style: titleSmallText),
-                                onPressed: () {
-                                  DatePicker.showTimePicker(context,
-                                      currentTime: DateTime.now(),
-                                      theme:
-                                          DatePickerTheme(containerHeight: 210),
-                                      showTitleActions: true,
-                                      onConfirm: (time) {
-                                    print('Confirm : ' + time.toString());
-                                    _timeClockIn =
-                                        '${time.hour}:${time.minute}:${time.second}';
+                              Expanded(
+                                child: FlatButton(
+                                  child: Text(
+                                      _timeClockIn == null
+                                          ? 'Set Waktu'
+                                          : _timeClockIn.toString(),
+                                      style: titleLittleText),
+                                  onPressed: () {
+                                    String _formatDate = DateFormat('y-M-dd')
+                                        .format(new DateTime.now());
 
-                                    _waktuClockIn = _timeClockIn.split(':');
+                                    DatePicker.showTimePicker(context,
+                                        currentTime: DateTime.parse(
+                                            _formatDate + ' ' + _timeClockIn),
+                                        theme: DatePickerTheme(
+                                            containerHeight: 210),
+                                        showTitleActions: true,
+                                        onConfirm: (time) {
+                                      _timeClockIn =
+                                          DateFormat.Hms().format(time);
+                                      _waktuClockIn = _timeClockIn.split(':');
 
-                                    setState(() {});
-                                  });
-                                },
+                                      setState(() {});
+                                    });
+                                  },
+                                ),
                               )
                             ],
                           ),
@@ -217,28 +250,32 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                                 'Reminder Clock Out Jam : ',
                                 style: titleSmallText,
                               ),
-                              FlatButton(
-                                child: Text(
-                                    _timeClockOut == null
-                                        ? 'Set Waktu'
-                                        : _timeClockOut.toString(),
-                                    style: titleSmallText),
-                                onPressed: () {
-                                  DatePicker.showTimePicker(context,
-                                      currentTime: DateTime.now(),
-                                      theme:
-                                          DatePickerTheme(containerHeight: 210),
-                                      showTitleActions: true,
-                                      onConfirm: (time) {
-                                    print('Confirm : ' + time.toString());
-                                    _timeClockOut =
-                                        '${time.hour}:${time.minute}:${time.second}';
+                              Expanded(
+                                child: FlatButton(
+                                  child: Text(
+                                      _timeClockOut == null
+                                          ? 'Set Waktu'
+                                          : _timeClockOut.toString(),
+                                      style: titleLittleText),
+                                  onPressed: () {
+                                    String _formatDate = DateFormat('y-M-dd')
+                                        .format(new DateTime.now());
+                                    DatePicker.showTimePicker(context,
+                                        currentTime: DateTime.parse(
+                                            _formatDate + ' ' + _timeClockOut),
+                                        theme: DatePickerTheme(
+                                            containerHeight: 210),
+                                        showTitleActions: true,
+                                        onConfirm: (time) {
+                                      _timeClockOut =
+                                          DateFormat.Hms().format(time);
 
-                                    _waktuClockOut = _timeClockOut.split(':');
+                                      _waktuClockOut = _timeClockOut.split(':');
 
-                                    setState(() {});
-                                  });
-                                },
+                                      setState(() {});
+                                    });
+                                  },
+                                ),
                               )
                             ],
                           ),
