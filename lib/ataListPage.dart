@@ -230,7 +230,11 @@ class _ListATAPageState extends State<ListATAPage> {
           return false;
         },
         child: Container(
-          color: Colors.blue[200],
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                colors: [Color(0xFF90caf9), const Color(0xFF29dded)]),
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,16 +252,20 @@ class _ListATAPageState extends State<ListATAPage> {
                 padding: const EdgeInsets.only(left: 20),
                 child: Row(
                   children: <Widget>[
-                    Text('Tampilkan Tanggal : ', style: titleSmallText),
-                    GestureDetector(
-                      child: Container(
-                        child: Text(
-                            _filterDate == null
-                                ? 'SEMUA'
-                                : _filterDate.toString(),
-                            style: titleCalenderText),
+                    Text('Pilih Tanggal : ', style: titleCalenderText),
+                    RaisedButton(
+                      elevation: 4,
+                      color: Color(0xff90caf9),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                        side: BorderSide(color: buttonColor),
                       ),
-                      onTap: () {
+                      child: Text(
+                          _filterDate == null
+                              ? 'SEMUA'
+                              : _filterDate.toString(),
+                          style: titleCalenderText),
+                      onPressed: () {
                         Future<DateTime> _selectedDate = showDatePicker(
                           context: context,
                           initialDate: DateTime.now(),
@@ -299,8 +307,15 @@ class _ListATAPageState extends State<ListATAPage> {
                               'Tidak ada Record',
                               style: titleText,
                             ),
+                            // SizedBox(height: 30),
                             // RaisedButton(
-                            //   child: Text('Back', style: titleText),
+                            //   padding: EdgeInsets.all(15),
+                            //   color: buttonColor,
+                            //   shape: RoundedRectangleBorder(
+                            //       side:
+                            //           BorderSide(color: Colors.white, width: 2),
+                            //       borderRadius: BorderRadius.circular(10)),
+                            //   child: Text('Refresh List', style: buttonText),
                             //   onPressed: () =>
                             //       Navigator.pushNamed(context, '/listPage'),
                             // )
@@ -313,7 +328,13 @@ class _ListATAPageState extends State<ListATAPage> {
                             _showSingleCard(ataList),
                             SizedBox(height: 10),
                             RaisedButton(
-                              child: Text('Refresh', style: titleText),
+                              padding: EdgeInsets.all(15),
+                              color: buttonColor,
+                              shape: RoundedRectangleBorder(
+                                  side:
+                                      BorderSide(color: Colors.white, width: 2),
+                                  borderRadius: BorderRadius.circular(10)),
+                              child: Text('Refresh List', style: buttonText),
                               onPressed: () =>
                                   Navigator.pushNamed(context, '/listPage'),
                             )

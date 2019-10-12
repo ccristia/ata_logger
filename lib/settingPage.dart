@@ -99,16 +99,19 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: Colors.blue[200],
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              colors: [Color(0xFF90caf9), const Color(0xFF29dded)]),
+        ),
         child: Form(
           key: _formKey,
           child: Padding(
-            padding: const EdgeInsets.only(left: 15, top: 30, right: 15),
+            padding: const EdgeInsets.only(left: 15, top: 20, right: 15),
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  SizedBox(height: 20),
                   ListTile(
                     title: Text(
                       'Pengaturan',
@@ -163,11 +166,17 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                           Row(
                             children: <Widget>[
                               Text(
-                                'Reminder Clock In Jam : ',
+                                'Reminder Clock In Di Jam : ',
                                 style: titleSmallText,
                               ),
                               Expanded(
-                                child: FlatButton(
+                                child: RaisedButton(
+                                  elevation: 4,
+                                  color: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5),
+                                    side: BorderSide(color: buttonColor),
+                                  ),
                                   child: Text(
                                       _timeClockIn == null
                                           ? 'Set Waktu'
@@ -247,11 +256,17 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                           Row(
                             children: <Widget>[
                               Text(
-                                'Reminder Clock Out Jam : ',
+                                'Reminder Clock Out Di Jam : ',
                                 style: titleSmallText,
                               ),
                               Expanded(
-                                child: FlatButton(
+                                child: RaisedButton(
+                                  elevation: 4,
+                                  color: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5),
+                                    side: BorderSide(color: buttonColor),
+                                  ),
                                   child: Text(
                                       _timeClockOut == null
                                           ? 'Set Waktu'

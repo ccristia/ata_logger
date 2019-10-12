@@ -26,7 +26,7 @@ TextStyle titleLittleText = TextStyle(
     fontWeight: FontWeight.bold);
 
 TextStyle titleCalenderText = TextStyle(
-    fontSize: smallfontSize, color: Colors.white, fontWeight: FontWeight.bold);
+    fontSize: smallfontSize, color: Colors.black, fontWeight: FontWeight.bold);
 
 TextStyle buttonText = TextStyle(
     fontWeight: FontWeight.w600, fontSize: mediumfontSize, color: Colors.white);

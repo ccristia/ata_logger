@@ -36,7 +36,8 @@ class DbATAManager {
           judul_notifikasi_ClockOut TEXT,
           body_notifikasi_ClockOut TEXT)
         ''');
-        await db.execute("INSERT INTO profile VALUES (0,'Little Giant','',0)");
+        await db
+            .execute("INSERT INTO profile VALUES (0,'Mas Little Giant','',0)");
         await db.execute(
             "INSERT INTO clockIn VALUES (0,7,30,0,'Mase','Sudah Clock In kah? Jangan Lupa Ya.')");
         await db.execute(
