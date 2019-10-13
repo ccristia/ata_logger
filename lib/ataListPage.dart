@@ -223,13 +223,12 @@ class _ListATAPageState extends State<ListATAPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: WillPopScope(
-        onWillPop: () async {
-          await Navigator.pushNamedAndRemoveUntil(context, '/', (_) => false);
-          return false;
-        },
-        child: Container(
+    return WillPopScope(
+      onWillPop: () {
+        Navigator.pushReplacementNamed(context, '/');
+      },
+      child: Scaffold(
+        body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
                 begin: Alignment.topCenter,

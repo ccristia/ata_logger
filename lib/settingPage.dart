@@ -166,7 +166,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                           Row(
                             children: <Widget>[
                               Text(
-                                'Reminder Clock In Di Jam : ',
+                                'Set Clock In Di Jam : ',
                                 style: titleSmallText,
                               ),
                               Expanded(
@@ -256,7 +256,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                           Row(
                             children: <Widget>[
                               Text(
-                                'Reminder Clock Out Di Jam : ',
+                                'Set Clock Out Di Jam : ',
                                 style: titleSmallText,
                               ),
                               Expanded(
@@ -294,6 +294,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                               )
                             ],
                           ),
+                          SizedBox(height: 5),
                           TextFormField(
                               controller: textJudulNotifikasiClockOut,
                               maxLength: 20,
@@ -396,6 +397,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
 
                           showDialog(
                               context: context,
+                              barrierDismissible: false, //harus klik button OK
                               builder: (ctx) {
                                 return AlertDialog(
                                   title: Text('Info'),

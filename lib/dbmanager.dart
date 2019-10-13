@@ -39,9 +39,9 @@ class DbATAManager {
         await db
             .execute("INSERT INTO profile VALUES (0,'Mas Little Giant','',0)");
         await db.execute(
-            "INSERT INTO clockIn VALUES (0,7,30,0,'Mase','Sudah Clock In kah? Jangan Lupa Ya.')");
+            "INSERT INTO clockIn VALUES (0,6,50,0,'Reminder Clock In','Sudah Clock In kah? Jangan Lupa Ya.')");
         await db.execute(
-            "INSERT INTO clockOut VALUES (0,15,30,0,'Mase','Sudah Clock Out kah? Jangan Lupa Ya.')");
+            "INSERT INTO clockOut VALUES (0,15,50,0,'Reminder Clock Out','Sudah Clock Out kah? Jangan Lupa Ya.')");
       });
     }
   }
