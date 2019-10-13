@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:ata_logger/ataListPage.dart';
 import 'package:ata_logger/dbmanager.dart';
 import 'package:ata_logger/settingPage.dart';
@@ -29,6 +31,48 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
 
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
+  _showNotfikasiWeekly(int jam, int menit, int detik) async {
+    var time = new Time(jam, menit, detik);
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+        'show weekly channel id',
+        'show weekly channel name',
+        'show weekly description');
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    var platformChannelSpecifics = new NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.showWeeklyAtDayAndTime(
+        0,
+        'show weekly title',
+        'Weekly notification shown on Monday at approximately ${time.hour}:${time.minute}:${time.second}',
+        Day.Monday,
+        time,
+        platformChannelSpecifics);
+  }
+
+  _showNotifikasi() async {
+    var vibrationPattern = new Int64List(4);
+    vibrationPattern[0] = 0;
+    vibrationPattern[1] = 1000;
+    vibrationPattern[2] = 5000;
+    vibrationPattern[3] = 2000;
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        'your channel id', 'your channel name', 'your channel description',
+        importance: Importance.Max,
+        priority: Priority.High,
+        ticker: 'ticker',
+        color: const Color.fromARGB(255, 255, 0, 0),
+        vibrationPattern: vibrationPattern);
+    var iOSPlatformChannelSpecifics = IOSNotificationDetails();
+    var platformChannelSpecifics = NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(
+        0,
+        'plain title',
+        'plain body askla;lkadskadas;dl adshasd adjjasdaldadlk asdl',
+        platformChannelSpecifics,
+        payload: 'item x');
+  }
+
   _saveClockIn() {
     setState(() {
       today = DateFormat('EEE, d-MMM-yyyy').format(DateTime.now());
@@ -42,6 +86,7 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
       isClockInDisable = true;
       isClockOutDisable = false;
     });
+    _cekButtonStatus();
   }
 
   _saveClockOut() {
@@ -66,6 +111,79 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
         isClockInDisable = true;
       });
     }
+    _cekButtonStatus();
+  }
+
+  _setClockInReminder() {
+    DbATAManager().getClockIn().then((data) {
+      Day _currentDay;
+      switch (DateTime.now().weekday) {
+        case 1:
+          _currentDay = Day.Monday;
+          break;
+        case 2:
+          _currentDay = Day.Tuesday;
+          break;
+        case 3:
+          _currentDay = Day.Wednesday;
+          break;
+        case 4:
+          _currentDay = Day.Thursday;
+          break;
+        case 5:
+          _currentDay = Day.Friday;
+          break;
+        default:
+          _currentDay = Day.Monday;
+          break;
+      }
+      _showNotificationWithSpecificTime(
+          id: 0,
+          hour: data[0].jam,
+          minute: data[0].menit,
+          second: data[0].detik,
+          title: data[0].judulClockIn,
+          msg: data[0].bodyClockIn,
+          day: _currentDay);
+    });
+
+    print('clock in reminder executing...');
+  }
+
+  _setClockOutReminder() {
+    DbATAManager().getClockOut().then((data) {
+      Day _currentDay;
+      switch (DateTime.now().weekday) {
+        case 1:
+          _currentDay = Day.Monday;
+          break;
+        case 2:
+          _currentDay = Day.Tuesday;
+          break;
+        case 3:
+          _currentDay = Day.Wednesday;
+          break;
+        case 4:
+          _currentDay = Day.Thursday;
+          break;
+        case 5:
+          _currentDay = Day.Friday;
+          break;
+        default:
+          _currentDay = Day.Monday;
+          break;
+      }
+      _showNotificationWithSpecificTime(
+          id: 1,
+          hour: data[0].jam,
+          minute: data[0].menit,
+          second: data[0].detik,
+          title: data[0].judulClockOut,
+          msg: data[0].bodyClockOut,
+          day: _currentDay);
+    });
+
+    print('clock out reminder executing...');
   }
 
   @override
@@ -116,139 +234,20 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
         });
         print('no data in database - all button enabled');
 
-        DbATAManager().getClockIn().then((data) {
-          _showNotification();
-          //Monday
-          _showNotificationWithSpecificTime(
-              id: 0,
-              hour: data[0].jam,
-              minute: data[0].menit,
-              second: data[0].detik,
-              title: data[0].judulClockIn,
-              msg: data[0].bodyClockIn,
-              day: Day.Monday);
-          //Tuesday
-          _showNotificationWithSpecificTime(
-              id: 0,
-              hour: data[0].jam,
-              minute: data[0].menit,
-              second: data[0].detik,
-              title: data[0].judulClockIn,
-              msg: data[0].bodyClockIn,
-              day: Day.Tuesday);
-          //Wednesday
-          _showNotificationWithSpecificTime(
-              id: 0,
-              hour: data[0].jam,
-              minute: data[0].menit,
-              second: data[0].detik,
-              title: data[0].judulClockIn,
-              msg: data[0].bodyClockIn,
-              day: Day.Wednesday);
-          //Thursday
-          _showNotificationWithSpecificTime(
-              id: 0,
-              hour: data[0].jam,
-              minute: data[0].menit,
-              second: data[0].detik,
-              title: data[0].judulClockIn,
-              msg: data[0].bodyClockIn,
-              day: Day.Thursday);
-          //Friday
-          _showNotificationWithSpecificTime(
-              id: 0,
-              hour: data[0].jam,
-              minute: data[0].menit,
-              second: data[0].detik,
-              title: data[0].judulClockIn,
-              msg: data[0].bodyClockIn,
-              day: Day.Friday);
-        });
-        DbATAManager().getClockOut().then((data) {
-          //Monday
-          _showNotificationWithSpecificTime(
-              id: 1,
-              hour: data[0].jam,
-              minute: data[0].menit,
-              second: data[0].detik,
-              title: data[0].judulClockOut,
-              msg: data[0].bodyClockOut,
-              day: Day.Monday);
-          //Tuesday
-          _showNotificationWithSpecificTime(
-              id: 1,
-              hour: data[0].jam,
-              minute: data[0].menit,
-              second: data[0].detik,
-              title: data[0].judulClockOut,
-              msg: data[0].bodyClockOut,
-              day: Day.Tuesday);
-          //Wednesday
-          _showNotificationWithSpecificTime(
-              id: 1,
-              hour: data[0].jam,
-              minute: data[0].menit,
-              second: data[0].detik,
-              title: data[0].judulClockOut,
-              msg: data[0].bodyClockOut,
-              day: Day.Wednesday);
-          //Thursday
-          _showNotificationWithSpecificTime(
-              id: 1,
-              hour: data[0].jam,
-              minute: data[0].menit,
-              second: data[0].detik,
-              title: data[0].judulClockOut,
-              msg: data[0].bodyClockOut,
-              day: Day.Thursday);
-          //Friday
-          _showNotificationWithSpecificTime(
-              id: 1,
-              hour: data[0].jam,
-              minute: data[0].menit,
-              second: data[0].detik,
-              title: data[0].judulClockOut,
-              msg: data[0].bodyClockOut,
-              day: Day.Friday);
-        });
-      }
-
-      if (result.clockIn == null && result.clockOut == null) {
-        setState(() {
-          isClockInDisable = false;
-          isClockOutDisable = false;
-          print('All button enabled');
-        });
+        _setClockInReminder();
+        _setClockOutReminder();
       } else if (result.clockIn != null && result.clockOut == null) {
         setState(() {
           isClockInDisable = true;
-          isClockOutDisable = false;
-          clockInTime = result.clockIn;
         });
-
-        DbATAManager().getClockOut().then((data) {
-          if (DateTime.now().weekday != DateTime.saturday ||
-              DateTime.now().weekday != DateTime.sunday) {
-            _showNotificationWithSpecificTime(
-                id: 0,
-                hour: data[0].jam,
-                minute: data[0].menit,
-                second: data[0].detik,
-                title: data[0].judulClockOut,
-                msg: data[0].bodyClockOut);
-
-            print(
-                'Button Clock In False : Jam ${data[0].jam.toString()} menit : ${data[0].menit.toString()}');
-          }
-        });
-      } else if (result.clockOut != null && result.clockOut != null) {
-        print('all button disabled');
+        _setClockOutReminder();
+        print('button clock in disable');
+      } else {
         setState(() {
           isClockInDisable = true;
-          clockInTime = result.clockIn;
           isClockOutDisable = true;
-          clockOutTime = result.clockOut;
         });
+        print('semua button disable tidak ada notifikasi ');
       }
     });
 
@@ -282,32 +281,24 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
       String msg,
       Day day}) async {
     var time = new Time(hour, minute, second);
-    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-        'repeatDailyAtTime channel id',
-        'repeatDailyAtTime channel name',
-        'repeatDailyAtTime description');
+
+    var vibrationPattern = new Int64List(4);
+    vibrationPattern[0] = 0;
+    vibrationPattern[1] = 1000;
+    vibrationPattern[2] = 5000;
+    vibrationPattern[3] = 2000;
+    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+        'your channel id', 'your channel name', 'your channel description',
+        importance: Importance.Max,
+        priority: Priority.High,
+        ticker: 'ticker',
+        color: const Color.fromARGB(255, 255, 0, 0),
+        vibrationPattern: vibrationPattern);
     var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
     var platformChannelSpecifics = new NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin.showWeeklyAtDayAndTime(
         id, title, msg, day, time, platformChannelSpecifics);
-  }
-
-  Future _showNotification() async {
-    var time = new Time(10, 40, 10);
-    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-        'repeatDailyAtTime channel id',
-        'repeatDailyAtTime channel name',
-        'repeatDailyAtTime description');
-    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-    var platformChannelSpecifics = new NotificationDetails(
-        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.showDailyAtTime(
-        0,
-        'show daily title',
-        'Daily notification shown at approximately ${time.hour}:${time.minute}:${time.second}',
-        time,
-        platformChannelSpecifics);
   }
 
   @override
@@ -393,35 +384,17 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
                     elevation: 0,
                     title: Text('Hi, ' + namaUser.toString()),
                     actions: <Widget>[
-                      // InkWell(
-                      //   onTap: () {
-                      //     DbATAManager().getClockIn().then((data) {
-                      //       _showNotificationWithSpecificTime(
-                      //           id: 0,
-                      //           hour: data[0].jam,
-                      //           minute: data[0].menit,
-                      //           second: data[0].detik,
-                      //           title: data[0].judulClockIn,
-                      //           msg: 'Hari Senin',
-                      //           day: Day.Monday);
-
-                      //       _showNotificationWithSpecificTime(
-                      //           id: 1,
-                      //           hour: data[0].jam,
-                      //           minute: data[0].menit,
-                      //           second: data[0].detik,
-                      //           title: data[0].judulClockIn,
-                      //           msg: 'Hari Selasa',
-                      //           day: Day.Tuesday);
-                      //     });
-                      //   },
-
-                      //   child: Icon(
-                      //     Icons.settings,
-                      //     size: 30,
-                      //     color: Colors.indigoAccent,
-                      //   ),
-                      // ),
+                      InkWell(
+                        onTap: () {
+                          var _day = DateTime.now().weekday;
+                          print(_day);
+                        },
+                        child: Icon(
+                          Icons.settings,
+                          size: 30,
+                          color: Colors.indigoAccent,
+                        ),
+                      ),
                       InkWell(
                         onTap: () =>
                             // Navigator.pushNamed(context, '/settingPage'),
