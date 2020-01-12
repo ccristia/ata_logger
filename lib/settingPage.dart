@@ -179,11 +179,11 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                                   ),
                                   child: Text(
                                       _timeClockIn == null
-                                          ? 'Set Waktu'
+                                          ? '06:50:00'
                                           : _timeClockIn.toString(),
                                       style: titleLittleText),
                                   onPressed: () {
-                                    String _formatDate = DateFormat('y-M-dd')
+                                    String _formatDate = DateFormat('y-MM-dd')
                                         .format(new DateTime.now());
 
                                     DatePicker.showTimePicker(context,
@@ -269,11 +269,11 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                                   ),
                                   child: Text(
                                       _timeClockOut == null
-                                          ? 'Set Waktu'
+                                          ? '15:45:00'
                                           : _timeClockOut.toString(),
                                       style: titleLittleText),
                                   onPressed: () {
-                                    String _formatDate = DateFormat('y-M-dd')
+                                    String _formatDate = DateFormat('y-MM-dd')
                                         .format(new DateTime.now());
                                     DatePicker.showTimePicker(context,
                                         currentTime: DateTime.parse(

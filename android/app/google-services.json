@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:712722569691:android:879a932ba2573a45ffaffe",
         "android_client_info": {
-          "package_name": "com.dcc.ata_logger"
+          "package_name": "com.little.ata_logger"
         }
       },
       "oauth_client": [
@@ -18,7 +18,7 @@
           "client_id": "712722569691-56u9q7jvjfgefj4el6c2uu2hc8222ua1.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.dcc.ata_logger",
+            "package_name": "com.little.ata_logger",
             "certificate_hash": "0d83fa1ea5c48a914d94bde44dab86bb18d3d0da"
           }
         },

@@ -28,26 +28,27 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
   List<ATA> ataList;
   Database db;
   String today = DateFormat('EEE, d-MMM-yyyy').format(DateTime.now());
+  DbATAManager _myDB = DbATAManager();
 
   FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
-  _showNotfikasiWeekly(int jam, int menit, int detik) async {
-    var time = new Time(jam, menit, detik);
-    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-        'show weekly channel id',
-        'show weekly channel name',
-        'show weekly description');
-    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-    var platformChannelSpecifics = new NotificationDetails(
-        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.showWeeklyAtDayAndTime(
-        0,
-        'show weekly title',
-        'Weekly notification shown on Monday at approximately ${time.hour}:${time.minute}:${time.second}',
-        Day.Monday,
-        time,
-        platformChannelSpecifics);
-  }
+  // _showNotfikasiWeekly(int jam, int menit, int detik) async {
+  //   var time = new Time(jam, menit, detik);
+  //   var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+  //       'show weekly channel id',
+  //       'show weekly channel name',
+  //       'show weekly description');
+  //   var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+  //   var platformChannelSpecifics = new NotificationDetails(
+  //       androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+  //   await flutterLocalNotificationsPlugin.showWeeklyAtDayAndTime(
+  //       0,
+  //       'show weekly title',
+  //       'Weekly notification shown on Monday at approximately ${time.hour}:${time.minute}:${time.second}',
+  //       Day.Monday,
+  //       time,
+  //       platformChannelSpecifics);
+  // }
 
   _showNotifikasi() async {
     var vibrationPattern = new Int64List(4);
@@ -66,10 +67,7 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
     var platformChannelSpecifics = NotificationDetails(
         androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
     await flutterLocalNotificationsPlugin.show(
-        0,
-        'plain title',
-        'plain body askla;lkadskadas;dl adshasd adjjasdaldadlk asdl',
-        platformChannelSpecifics,
+        0, 'plain title', 'plain body', platformChannelSpecifics,
         payload: 'item x');
   }
 
@@ -81,7 +79,7 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
     clockInTime = DateFormat.jm().format(DateTime.now());
     ATA data = ATA(day: today, clockIn: clockInTime, clockOut: null);
     print('Hari ini :' + clockInTime);
-    DbATAManager().insertATA(data);
+    _myDB.insertATA(data);
     setState(() {
       isClockInDisable = true;
       isClockOutDisable = false;
@@ -90,13 +88,16 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
   }
 
   _saveClockOut() {
+    setState(() {
+      today = DateFormat('EEE, d-MMM-yyyy').format(DateTime.now());
+    });
     clockOutTime = DateFormat.jm().format(DateTime.now());
     ATA data = ATA(
       clockOut: clockOutTime,
     );
 
     if (isClockInDisable == true) {
-      DbATAManager().updateATA(data, today);
+      _myDB.updateATA(data, today);
       setState(() {
         isClockInDisable = true;
         isClockOutDisable = true;
@@ -105,7 +106,7 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
       clockOutTime = DateFormat.jm().format(DateTime.now());
       ATA data = ATA(day: today, clockIn: null, clockOut: clockOutTime);
 
-      DbATAManager().insertATA(data);
+      _myDB.insertATA(data);
       setState(() {
         isClockOutDisable = true;
         isClockInDisable = true;
@@ -114,76 +115,77 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
     _cekButtonStatus();
   }
 
-  _setClockInReminder() {
-    DbATAManager().getClockIn().then((data) {
-      Day _currentDay;
-      switch (DateTime.now().weekday) {
-        case 1:
-          _currentDay = Day.Monday;
-          break;
-        case 2:
-          _currentDay = Day.Tuesday;
-          break;
-        case 3:
-          _currentDay = Day.Wednesday;
-          break;
-        case 4:
-          _currentDay = Day.Thursday;
-          break;
-        case 5:
-          _currentDay = Day.Friday;
-          break;
-        default:
-          _currentDay = Day.Monday;
-          break;
-      }
-      _showNotificationWithSpecificTime(
-          id: 0,
-          hour: data[0].jam,
-          minute: data[0].menit,
-          second: data[0].detik,
-          title: data[0].judulClockIn,
-          msg: data[0].bodyClockIn,
-          day: _currentDay);
-    });
+  _setClockInReminder() async {
+    var data = await _myDB.getClockIn();
+    Day _currentDay;
 
-    print('clock in reminder executing...');
+    switch (DateTime.now().weekday) {
+      case 1:
+        _currentDay = Day.Monday;
+        break;
+      case 2:
+        _currentDay = Day.Tuesday;
+        break;
+      case 3:
+        _currentDay = Day.Wednesday;
+        break;
+      case 4:
+        _currentDay = Day.Thursday;
+        break;
+      case 5:
+        _currentDay = Day.Friday;
+        break;
+      default:
+        _currentDay = Day.Monday;
+        break;
+    }
+    _showNotificationWithSpecificTime(
+        id: 0,
+        hour: data[0].jam,
+        minute: data[0].menit,
+        second: data[0].detik,
+        title: data[0].judulClockIn,
+        msg: data[0].bodyClockIn,
+        day: _currentDay);
+
+    print(
+        'clock in reminder executing... on ${data[0].jam} : ${data[0].menit} : ${data[0].detik}');
   }
 
-  _setClockOutReminder() {
-    DbATAManager().getClockOut().then((data) {
-      Day _currentDay;
-      switch (DateTime.now().weekday) {
-        case 1:
-          _currentDay = Day.Monday;
-          break;
-        case 2:
-          _currentDay = Day.Tuesday;
-          break;
-        case 3:
-          _currentDay = Day.Wednesday;
-          break;
-        case 4:
-          _currentDay = Day.Thursday;
-          break;
-        case 5:
-          _currentDay = Day.Friday;
-          break;
-        default:
-          _currentDay = Day.Monday;
-          break;
-      }
-      _showNotificationWithSpecificTime(
-          id: 1,
-          hour: data[0].jam,
-          minute: data[0].menit,
-          second: data[0].detik,
-          title: data[0].judulClockOut,
-          msg: data[0].bodyClockOut,
-          day: _currentDay);
-    });
+  _setClockOutReminder() async {
+    var data = await _myDB.getClockOut();
+    Day _currentDay;
+    switch (DateTime.now().weekday) {
+      case 1:
+        _currentDay = Day.Monday;
+        break;
+      case 2:
+        _currentDay = Day.Tuesday;
+        break;
+      case 3:
+        _currentDay = Day.Wednesday;
+        break;
+      case 4:
+        _currentDay = Day.Thursday;
+        break;
+      case 5:
+        _currentDay = Day.Friday;
+        break;
+      default:
+        _currentDay = Day.Monday;
+        break;
+    }
+    _showNotificationWithSpecificTime(
+        id: 1,
+        hour: data[0].jam,
+        minute: data[0].menit,
+        second: data[0].detik,
+        title: data[0].judulClockOut,
+        msg: data[0].bodyClockOut,
+        day: _currentDay);
 
-    print('clock out reminder executing...');
+    print(
+        'clock OUT reminder executing... on ${data[0].jam} : ${data[0].menit} : ${data[0].detik}');
   }
 
   @override
@@ -212,7 +214,7 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
     _cekButtonStatus();
   }
 
-  void _cekButtonStatus() {
+  void _cekButtonStatus() async {
     print('Cek Button Status');
 
     //==========LOCAL NOTIFICATION SECTION==============
@@ -226,33 +228,43 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
         onSelectNotification: onSelectNotification);
 
     String hariIni = DateFormat('EEE, d-MMM-yyyy').format(DateTime.now());
-    DbATAManager().checkATA(hariIni).then((result) {
-      if (result == null) {
-        setState(() {
-          isClockInDisable = false;
-          isClockOutDisable = false;
-        });
-        print('no data in database - all button enabled');
+    ATA result = await _myDB.checkATA(hariIni);
 
-        _setClockInReminder();
-        _setClockOutReminder();
-      } else if (result.clockIn != null && result.clockOut == null) {
-        setState(() {
-          isClockInDisable = true;
-        });
-        _setClockOutReminder();
-        print('button clock in disable');
-      } else {
-        setState(() {
-          isClockInDisable = true;
-          isClockOutDisable = true;
-        });
-        print('semua button disable tidak ada notifikasi ');
-      }
-    });
+    if (result == null) {
+      setState(() {
+        isClockInDisable = false;
+        isClockOutDisable = false;
+        clockInTime = 'null';
+        clockOutTime = 'null';
+      });
+      print('no data in database - all button enabled');
+
+      _setClockInReminder();
+      _setClockOutReminder();
+    } else if (result.clockIn != null && result.clockOut == null) {
+      setState(() {
+        isClockInDisable = true;
+        clockInTime = result.clockIn;
+      });
+      _setClockOutReminder();
+      print('button clock in disable');
+
+      //disable Clock In Reminder
+      await flutterLocalNotificationsPlugin.cancel(0);
+    } else {
+      setState(() {
+        isClockInDisable = true;
+        isClockOutDisable = true;
+        clockInTime = result.clockIn;
+        clockOutTime = result.clockOut;
+      });
+      print('semua button disable tidak ada notifikasi ');
+      //disable Clock In & Out Reminder
+      await flutterLocalNotificationsPlugin.cancelAll();
+    }
 
     //get profile name
-    DbATAManager().getProfile().then((value) {
+    _myDB.getProfile().then((value) {
       setState(() {
         namaUser = value[0].nama;
       });
@@ -261,15 +273,15 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
   }
 
   Future onSelectNotification(String payload) async {
-    showDialog(
-      context: context,
-      builder: (_) {
-        return new AlertDialog(
-          title: Text("OK"),
-          content: Text("Siap Laksanakan."),
-        );
-      },
-    );
+    // showDialog(
+    //   context: context,
+    //   builder: (_) {
+    //     return new AlertDialog(
+    //       title: Text("OK"),
+    //       content: Text("Siap Laksanakan."),
+    //     );
+    //   },
+    // );
   }
 
   Future _showNotificationWithSpecificTime(
@@ -282,11 +294,19 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
       Day day}) async {
     var time = new Time(hour, minute, second);
 
-    var vibrationPattern = new Int64List(4);
+    var vibrationPattern = new Int64List(12);
     vibrationPattern[0] = 0;
     vibrationPattern[1] = 1000;
     vibrationPattern[2] = 5000;
     vibrationPattern[3] = 2000;
+    vibrationPattern[4] = 0;
+    vibrationPattern[5] = 1000;
+    vibrationPattern[6] = 5000;
+    vibrationPattern[7] = 2000;
+    vibrationPattern[8] = 0;
+    vibrationPattern[9] = 1000;
+    vibrationPattern[10] = 5000;
+    vibrationPattern[11] = 2000;
     var androidPlatformChannelSpecifics = AndroidNotificationDetails(
         'your channel id', 'your channel name', 'your channel description',
         importance: Importance.Max,
@@ -384,17 +404,18 @@ class _ATAPAGEState extends State<ATAPAGE> with WidgetsBindingObserver {
                     elevation: 0,
                     title: Text('Hi, ' + namaUser.toString()),
                     actions: <Widget>[
-                      InkWell(
-                        onTap: () {
-                          var _day = DateTime.now().weekday;
-                          print(_day);
-                        },
-                        child: Icon(
-                          Icons.settings,
-                          size: 30,
-                          color: Colors.indigoAccent,
-                        ),
-                      ),
+                      // InkWell(
+                      //   onTap: () {
+                      //     var _day = DateTime.now().weekday;
+                      //     print(_day);
+                      //     _showNotifikasi();
+                      //   },
+                      //   child: Icon(
+                      //     Icons.settings,
+                      //     size: 30,
+                      //     color: Colors.indigoAccent,
+                      //   ),
+                      // ),
                       InkWell(
                         onTap: () =>
                             // Navigator.pushNamed(context, '/settingPage'),

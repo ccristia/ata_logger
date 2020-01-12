@@ -1,4 +1,4 @@
-package com.dcc.ata_logger
+package com.little.ata_logger
 
 import android.os.Bundle
 
